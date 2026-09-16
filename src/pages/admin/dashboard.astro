@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { MetricasCards } from '../../components/admin/MetricasCards';
+---
+
+<DashboardLayout title="Dashboard de Métricas · DataReport IASA" seccion="Supervisión" subtitulo="Métricas">
+  <MetricasCards client:load />
+</DashboardLayout>

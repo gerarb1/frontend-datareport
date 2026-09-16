@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { DetalleInformeView } from '../../components/informes/DetalleInformeView';
+
+const { id = 'b5c6d7e8-f9a0-4b1c-2d3e-4f5a6b7c8d9e' } = Astro.params;
+---
+
+<DashboardLayout title={`Expediente QC #${id.slice(0, 8)} · DataReport IASA`} seccion="Calidad" subtitulo={`Informe ${id.slice(0, 8)}`}>
+  <DetalleInformeView client:load informeId={id as string} />
+</DashboardLayout>

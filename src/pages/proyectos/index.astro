@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { ProyectosLista } from '../../components/proyectos/ProyectosLista';
+---
+
+<DashboardLayout title="Proyectos · DataReport IASA" seccion="Repositorio" subtitulo="Proyectos">
+  <div class="max-w-7xl mx-auto">
+    <ProyectosLista client:load />
+  </div>
+</DashboardLayout>

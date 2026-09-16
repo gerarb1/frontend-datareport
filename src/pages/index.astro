@@ -1,0 +1,9 @@
+---
+const token = Astro.cookies.get('sb-access-token')?.value;
+
+if (!token) {
+  return Astro.redirect('/login');
+} else {
+  return Astro.redirect('/informes');
+}
+---

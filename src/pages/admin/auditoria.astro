@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { AuditoriaTabla } from '../../components/admin/AuditoriaTabla';
+---
+
+<DashboardLayout title="Registro de Auditoría · DataReport IASA" seccion="Supervisión" subtitulo="Auditoría">
+  <AuditoriaTabla client:load />
+</DashboardLayout>

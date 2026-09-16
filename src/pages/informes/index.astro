@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { InformesLista } from '../../components/informes/InformesLista';
+---
+
+<DashboardLayout title="Informes Técnicos · DataReport IASA" seccion="Gestión" subtitulo="Informes">
+  <div class="max-w-7xl mx-auto">
+    <InformesLista client:load />
+  </div>
+</DashboardLayout>

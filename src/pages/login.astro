@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { LoginForm } from '../components/auth/LoginForm';
+---
+
+<BaseLayout title="Acceso al Sistema · DataReport IASA">
+  <main class="min-h-screen flex items-center justify-center p-4 bg-base">
+    <LoginForm client:load />
+  </main>
+</BaseLayout>
