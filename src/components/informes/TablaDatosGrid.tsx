@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import DataGrid from 'react-data-grid';
+import { DataGrid } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { read, utils, writeFile } from 'xlsx';
 import { AlertTriangle, Download, Save, Upload, FileSpreadsheet } from 'lucide-react';

@@ -11,7 +11,7 @@ function ProyectosListaContent() {
     queryKey: ['proyectos'],
     queryFn: async () => {
       const response = await api.proyectos.listar();
-      return response.data?.data || response.data || [];
+      return (response as any).data?.data || response.data || [];
     }
   });
 

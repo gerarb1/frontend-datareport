@@ -1,5 +1,5 @@
-import React, { useState, Component, ErrorInfo, ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
 // 1. Límite de Errores para atrapar la pantalla blanca
@@ -45,7 +45,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 }
 
 // 3. Envoltorio (HOC)
-export function withProvider<T extends JSX.IntrinsicAttributes>(WrappedComponent: React.ComponentType<T>) {
+export function withProvider<T extends Record<string, any>>(WrappedComponent: React.ComponentType<T>) {
   return function ProviderWrapper(props: T) {
     console.log(`🛠️ [withProvider] Montando componente: ${WrappedComponent.displayName || WrappedComponent.name || 'Componente'}`);
     return (
