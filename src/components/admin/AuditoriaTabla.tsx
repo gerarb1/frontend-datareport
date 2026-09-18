@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { AuditoriaResponse, RegistroAuditoria } from '@/lib/types';
+import type { AuditoriaResponse } from '@/lib/types';
 import { ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 export function AuditoriaTabla() {
@@ -21,45 +21,8 @@ export function AuditoriaTabla() {
   });
 
   const data: AuditoriaResponse = res?.data || {
-    registros: [
-      {
-        id: 142,
-        usuario_id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
-        entidad: 'informes',
-        entidad_id: 'b5c6d7e8-f9a0-4b1c-2d3e-4f5a6b7c8d9e',
-        accion: 'crear',
-        metadatos: {
-          titulo: 'Informe trimestral Q3 2026',
-          proyecto_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-        },
-        fecha: '2026-09-05T10:00:00.000Z',
-      },
-      {
-        id: 143,
-        usuario_id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
-        entidad: 'informes',
-        entidad_id: 'b5c6d7e8-f9a0-4b1c-2d3e-4f5a6b7c8d9e',
-        accion: 'transicion',
-        metadatos: {
-          estado_anterior: 'borrador',
-          estado_nuevo: 'enviado',
-        },
-        fecha: '2026-09-05T12:00:00.000Z',
-      },
-      {
-        id: 144,
-        usuario_id: '11223344-5566-4778-899a-aabbccddeeff',
-        entidad: 'revisiones',
-        entidad_id: 'f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c',
-        accion: 'crear_revision',
-        metadatos: {
-          resultado: 'observado',
-          observaciones_count: 3,
-        },
-        fecha: '2026-09-05T16:00:00.000Z',
-      },
-    ],
-    total: 3,
+    registros: [],
+    total: 0,
     limit: 20,
     offset: 0,
   };
@@ -78,7 +41,7 @@ export function AuditoriaTabla() {
           <div>
             <h2 className="text-sm font-semibold tracking-tight">Registro General de Auditoría</h2>
             <p className="text-[11px] font-mono text-ink-muted">
-              Trazabilidad inmutable de operaciones (GET /api/v1/metrics/auditoria)
+              Trazabilidad inmutable de operaciones (GET /api/v1/metrics/auditoria → MS3)
             </p>
           </div>
         </div>
@@ -117,7 +80,11 @@ export function AuditoriaTabla() {
       <div className="bg-white border border-border rounded-[3px] overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-xs font-mono text-ink-muted">
-            Cargando registros de auditoría...
+            Cargando registros de auditoría desde MS Reviews...
+          </div>
+        ) : isError ? (
+          <div className="p-4 bg-red-50 border border-alarma/40 text-alarma text-xs rounded-[3px] font-mono">
+            Error al cargar los registros de auditoría.
           </div>
         ) : registros.length === 0 ? (
           <div className="p-8 text-center text-xs font-mono text-ink-muted">

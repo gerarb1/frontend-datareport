@@ -1,8 +1,15 @@
 ---
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
-import { MetricasCards } from '../../components/admin/MetricasCards';
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { withProvider } from "../../components/providers/AppProviders";
+import { MetricasCards } from "../../components/admin/MetricasCards";
+
+const MetricasCardsView = withProvider(MetricasCards);
 ---
 
-<DashboardLayout title="Dashboard de Métricas · DataReport IASA" seccion="Supervisión" subtitulo="Métricas">
-  <MetricasCards client:load />
+<DashboardLayout
+  title="Dashboard de Métricas · DataReport IASA"
+  seccion="Supervisión"
+  subtitulo="Métricas"
+>
+  <MetricasCardsView client:only="react" />
 </DashboardLayout>

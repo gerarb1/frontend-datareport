@@ -17,7 +17,6 @@
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
     "@hookform/resolvers": "^5.9.1",
-    "@supabase/supabase-js": "^2.116.0",
     "@tanstack/react-query": "^5.102.8",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -25,11 +24,15 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.46.0",
+    "mammoth": "^1.12.3",
+    "papaparse": "^5.7.0",
+    "pdfjs-dist": "^6.3.289",
     "react": "^19.3.0",
     "react-data-grid": "7.0.0-beta.61",
     "react-dom": "^19.3.0",
     "react-hook-form": "^7.88.0",
     "tailwind-merge": "^3.7.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.6.5"
   },
   "allowScripts": {
@@ -45,6 +48,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/tailwind": "^6.0.2",
+    "@types/papaparse": "^5.5.2",
     "autoprefixer": "^10.6.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.8.3"

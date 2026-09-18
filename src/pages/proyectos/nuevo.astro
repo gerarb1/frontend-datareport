@@ -1,0 +1,15 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { NuevoProyectoView } from "../../components/proyectos/NuevoProyecto";
+---
+
+<DashboardLayout
+  title="Nuevo Proyecto · DataReport IASA"
+  seccion="Repositorio"
+  subtitulo="Crear Proyecto"
+>
+  <div class="max-w-7xl mx-auto">
+    <!-- Renderizado estático con delegación al cliente -->
+    <NuevoProyectoView client:only="react" />
+  </div>
+</DashboardLayout>

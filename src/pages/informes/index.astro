@@ -1,10 +1,14 @@
 ---
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
-import { InformesLista } from '../../components/informes/InformesLista';
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { InformesView } from "../../components/informes/InformesLista";
 ---
 
-<DashboardLayout title="Informes Técnicos · DataReport IASA" seccion="Gestión" subtitulo="Informes">
+<DashboardLayout
+  title="Informes · DataReport IASA"
+  seccion="Documentos"
+  subtitulo="Informes"
+>
   <div class="max-w-7xl mx-auto">
-    <InformesLista client:load />
+    <InformesView client:only="react" />
   </div>
 </DashboardLayout>

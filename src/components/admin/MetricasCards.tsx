@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { MetricasDashboard, EstadoInforme } from '@/lib/types';
 import { EstadoBadge } from '@/components/common/EstadoBadge';
-import { BarChart3, FolderKanban, FileText, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { BarChart3, FolderKanban, FileText, CheckCircle2, RefreshCw } from 'lucide-react';
 
 export function MetricasCards() {
   const {
@@ -18,18 +18,12 @@ export function MetricasCards() {
   });
 
   const data: MetricasDashboard = res?.data || {
-    informes_por_estado: {
-      borrador: 12,
-      enviado: 5,
-      en_revision: 3,
-      observado: 2,
-      aprobado: 18,
-      rechazado: 1,
-    },
-    total_informes: 41,
-    total_proyectos_activos: 8,
+    informes_por_estado: {},
+    total_informes: 0,
+    total_proyectos_activos: 0,
   };
 
+  // Solo los 6 estados válidos del ENUM PostgreSQL
   const estados: EstadoInforme[] = [
     'borrador',
     'enviado',
@@ -48,7 +42,7 @@ export function MetricasCards() {
           <div>
             <h2 className="text-sm font-semibold tracking-tight">Telemetría y Control Estadístico</h2>
             <p className="text-[11px] font-mono text-ink-muted">
-              Métricas agregadas del repositorio de calidad (GET /api/v1/metrics/dashboard)
+              Métricas agregadas del repositorio de calidad (GET /api/v1/metrics/dashboard → MS3)
             </p>
           </div>
         </div>
@@ -63,71 +57,83 @@ export function MetricasCards() {
         </button>
       </div>
 
-      {/* KPI Highlights */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white border border-border p-4 rounded-[3px]">
-          <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
-            <span>Total Informes</span>
-            <FileText className="w-4 h-4 text-accent" />
-          </div>
-          <div className="text-2xl font-mono font-bold mt-2 text-ink">
-            {data.total_informes}
-          </div>
-          <p className="text-[11px] text-ink-subtle mt-1 font-mono">Expedientes procesados en QC</p>
+      {isLoading ? (
+        <div className="p-8 text-center text-xs font-mono text-ink-muted">
+          Cargando métricas desde MS Reviews...
         </div>
-
-        <div className="bg-white border border-border p-4 rounded-[3px]">
-          <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
-            <span>Proyectos Activos</span>
-            <FolderKanban className="w-4 h-4 text-accent" />
-          </div>
-          <div className="text-2xl font-mono font-bold mt-2 text-ink">
-            {data.total_proyectos_activos}
-          </div>
-          <p className="text-[11px] text-ink-subtle mt-1 font-mono">Líneas de investigación en curso</p>
+      ) : isError ? (
+        <div className="p-4 bg-red-50 border border-alarma/40 text-alarma text-xs rounded-[3px] font-mono">
+          Error al cargar las métricas del dashboard.
         </div>
-
-        <div className="bg-white border border-border p-4 rounded-[3px]">
-          <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
-            <span>Tasa de Aprobación</span>
-            <CheckCircle2 className="w-4 h-4 text-estado-aprobado" />
-          </div>
-          <div className="text-2xl font-mono font-bold mt-2 text-estado-aprobado">
-            {data.total_informes > 0
-              ? `${Math.round(((data.informes_por_estado.aprobado || 0) / data.total_informes) * 100)}%`
-              : '0%'}
-          </div>
-          <p className="text-[11px] text-ink-subtle mt-1 font-mono">Conforme a normativas analíticas</p>
-        </div>
-      </div>
-
-      {/* Breakdown by Status Grid */}
-      <div className="bg-white border border-border p-4 rounded-[3px] space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-ink pb-2 border-b border-border">
-          Distribución de Expedientes por Estado Instrumental
-        </h3>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {estados.map((est) => {
-            const count = data.informes_por_estado[est] || 0;
-            const porcentaje = data.total_informes > 0 ? Math.round((count / data.total_informes) * 100) : 0;
-            return (
-              <div
-                key={est}
-                className="p-3 border border-border rounded-[3px] bg-base flex flex-col justify-between space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <EstadoBadge estado={est} showDot={true} />
-                </div>
-                <div>
-                  <div className="text-xl font-mono font-bold text-ink">{count}</div>
-                  <div className="text-[10px] font-mono text-ink-subtle">{porcentaje}% del total</div>
-                </div>
+      ) : (
+        <>
+          {/* KPI Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-white border border-border p-4 rounded-[3px]">
+              <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
+                <span>Total Informes</span>
+                <FileText className="w-4 h-4 text-accent" />
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <div className="text-2xl font-mono font-bold mt-2 text-ink">
+                {data.total_informes}
+              </div>
+              <p className="text-[11px] text-ink-subtle mt-1 font-mono">Expedientes procesados en QC</p>
+            </div>
+
+            <div className="bg-white border border-border p-4 rounded-[3px]">
+              <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
+                <span>Proyectos Activos</span>
+                <FolderKanban className="w-4 h-4 text-accent" />
+              </div>
+              <div className="text-2xl font-mono font-bold mt-2 text-ink">
+                {data.total_proyectos_activos}
+              </div>
+              <p className="text-[11px] text-ink-subtle mt-1 font-mono">Líneas de investigación en curso</p>
+            </div>
+
+            <div className="bg-white border border-border p-4 rounded-[3px]">
+              <div className="flex items-center justify-between text-xs text-ink-muted font-mono uppercase">
+                <span>Tasa de Aprobación</span>
+                <CheckCircle2 className="w-4 h-4 text-estado-aprobado" />
+              </div>
+              <div className="text-2xl font-mono font-bold mt-2 text-estado-aprobado">
+                {data.total_informes > 0
+                  ? `${Math.round(((data.informes_por_estado.aprobado || 0) / data.total_informes) * 100)}%`
+                  : '0%'}
+              </div>
+              <p className="text-[11px] text-ink-subtle mt-1 font-mono">Conforme a normativas analíticas</p>
+            </div>
+          </div>
+
+          {/* Breakdown by Status Grid */}
+          <div className="bg-white border border-border p-4 rounded-[3px] space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-ink pb-2 border-b border-border">
+              Distribución de Expedientes por Estado Instrumental
+            </h3>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {estados.map((est) => {
+                const count = data.informes_por_estado[est] || 0;
+                const porcentaje = data.total_informes > 0 ? Math.round((count / data.total_informes) * 100) : 0;
+                return (
+                  <div
+                    key={est}
+                    className="p-3 border border-border rounded-[3px] bg-base flex flex-col justify-between space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <EstadoBadge estado={est} showDot={true} />
+                    </div>
+                    <div>
+                      <div className="text-xl font-mono font-bold text-ink">{count}</div>
+                      <div className="text-[10px] font-mono text-ink-subtle">{porcentaje}% del total</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

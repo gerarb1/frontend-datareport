@@ -19,29 +19,28 @@ export function HistorialEstados({ informeId }: HistorialEstadosProps) {
     queryFn: () => api.informes.historial(informeId),
   });
 
-  const historial: HistorialTransicion[] = res?.data || [
-    {
-      id: 'd8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2a',
-      informe_id: informeId,
-      estado_anterior: 'borrador',
-      estado_nuevo: 'enviado',
-      cambiado_por: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
-      comentario: 'Informe listo para revisión',
-      creado_en: '2026-09-05T12:00:00.000Z',
-    },
-    {
-      id: 'e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b',
-      informe_id: informeId,
-      estado_anterior: 'enviado',
-      estado_nuevo: 'en_revision',
-      cambiado_por: '11223344-5566-4778-899a-aabbccddeeff',
-      comentario: 'Iniciando proceso de validación analítica de datos',
-      creado_en: '2026-09-05T14:00:00.000Z',
-    },
-  ];
+  const historial: HistorialTransicion[] = res?.data || [];
 
   if (isLoading) {
-    return <div className="p-4 text-xs font-mono text-ink-muted">Cargando bitácora de transiciones...</div>;
+    return <div className="p-4 text-xs font-mono text-ink-muted">Cargando bitácora de transiciones desde MS Academic...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-4 text-xs font-mono text-alarma">Error al cargar el historial de estados.</div>;
+  }
+
+  if (historial.length === 0) {
+    return (
+      <div className="bg-white border border-border p-4 rounded-[3px]">
+        <div className="flex items-center gap-2 pb-2 border-b border-border">
+          <History className="w-4 h-4 text-accent" />
+          <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-ink">
+            Bitácora de Estados y Trazabilidad
+          </h3>
+        </div>
+        <p className="text-xs font-mono text-ink-muted mt-3">No hay transiciones registradas aún.</p>
+      </div>
+    );
   }
 
   return (
@@ -49,7 +48,7 @@ export function HistorialEstados({ informeId }: HistorialEstadosProps) {
       <div className="flex items-center gap-2 pb-2 border-b border-border">
         <History className="w-4 h-4 text-accent" />
         <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-ink">
-          Bitácora de Estados y Trazabilidad (GET /api/v1/informes/:id/historial)
+          Bitácora de Estados y Trazabilidad (GET /api/v1/informes/:id/historial → MS2)
         </h3>
       </div>
 

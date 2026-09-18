@@ -1,10 +1,16 @@
 ---
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
-import { ProyectosLista } from '../../components/proyectos/ProyectosLista';
+// src/pages/proyectos/index.astro
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { ProyectosView } from "../../components/proyectos/ProyectosLista";
 ---
 
-<DashboardLayout title="Proyectos · DataReport IASA" seccion="Repositorio" subtitulo="Proyectos">
+<DashboardLayout
+  title="Proyectos · DataReport IASA"
+  seccion="Repositorio"
+  subtitulo="Proyectos"
+>
   <div class="max-w-7xl mx-auto">
-    <ProyectosLista client:load />
+    <!-- Una única isla de React que contiene todo su contexto -->
+    <ProyectosView client:only="react" />
   </div>
 </DashboardLayout>

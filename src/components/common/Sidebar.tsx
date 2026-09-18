@@ -2,12 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   FolderKanban,
   FileText,
-  CheckSquare,
   BarChart3,
   ShieldCheck,
   LogOut,
-  Activity,
-  Database,
   User as UserIcon,
 } from 'lucide-react';
 import { getStoredUser, api } from '@/lib/api';
@@ -31,9 +28,9 @@ export function Sidebar({ currentPath = '' }: SidebarProps) {
       }).catch(() => {});
     }
 
-    // Health check instrumental
-    api.health.check()
-      .then((res) => setHealthOk(res.data?.status === 'ok'))
+    // Health check contra los 4 microservicios
+    api.health.checkAll()
+      .then((ok) => setHealthOk(ok))
       .catch(() => setHealthOk(false));
   }, []);
 
@@ -66,8 +63,8 @@ export function Sidebar({ currentPath = '' }: SidebarProps) {
     },
   ];
 
-  const handleLogout = async () => {
-    await api.auth.logout();
+  const handleLogout = () => {
+    api.auth.logout();
     window.location.href = '/login';
   };
 
@@ -83,13 +80,13 @@ export function Sidebar({ currentPath = '' }: SidebarProps) {
             <span className="font-semibold tracking-wider text-xs uppercase font-mono">IASA · DataReport</span>
           </div>
           <span
-            title={healthOk === true ? 'API v1 En Línea' : healthOk === false ? 'API Sin Conexión' : 'Verificando...'}
+            title={healthOk === true ? 'Microservicios En Línea' : healthOk === false ? 'Microservicios Sin Conexión' : 'Verificando...'}
             className={`w-2 h-2 rounded-full ${
               healthOk === true
                 ? 'bg-estado-aprobado'
                 : healthOk === false
                 ? 'bg-alarma'
-                : 'bg-estado-recibido animate-pulse'
+                : 'bg-estado-borrador animate-pulse'
             }`}
           />
         </div>

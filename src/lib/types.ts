@@ -1,14 +1,34 @@
+// ─────────────────────────────────────────────────────────────
+// types.ts — Tipos y DTOs estrictos alineados al contrato real
+// de los 4 microservicios desplegados en Cloudflare Workers.
+// ─────────────────────────────────────────────────────────────
+
+// ═══════════════  Roles y Estados  ═══════════════
+
 export type Rol = 'superadmin' | 'revisor' | 'investigador' | 'auxiliar';
 
+/**
+ * Estados permitidos según el ENUM de PostgreSQL.
+ * Transiciones válidas:
+ *  borrador  → enviado
+ *  enviado   → en_revision
+ *  en_revision → observado | aprobado | rechazado
+ *  observado → borrador
+ *  rechazado → borrador
+ */
 export type EstadoInforme =
   | 'borrador'
-  | 'recibido'
   | 'enviado'
   | 'en_revision'
   | 'observado'
-  | 'corregido'
   | 'aprobado'
   | 'rechazado';
+
+export type ResultadoRevision = 'observado' | 'aprobado' | 'rechazado';
+
+export type StorageTipo = 'informe' | 'dataset';
+
+// ═══════════════  Respuesta genérica de la API  ═══════════════
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -17,6 +37,8 @@ export interface ApiResponse<T> {
   error?: string;
   details?: string;
 }
+
+// ═══════════════  MS1: Autenticación y Perfiles  ═══════════════
 
 export interface Usuario {
   id: string;
@@ -38,6 +60,8 @@ export interface RegisterResponse {
 export interface SyncProfileResponse {
   synced: boolean;
 }
+
+// ═══════════════  MS2: Gestión Académica e Informes  ═══════════════
 
 export interface Proyecto {
   id: string;
@@ -106,41 +130,21 @@ export interface HistorialTransicion {
   creado_en: string;
 }
 
-export type StorageTipo = 'informe' | 'dataset';
-
-export interface PresignedUrlRequest {
-  tipo: StorageTipo;
-  filename: string;
-  size_bytes: number;
-  mime_type: string;
-  target_id: string;
-}
-
-export interface PresignedUrlResponse {
-  upload_url: string;
-  file_key: string;
-}
-
-export type ResultadoRevision = 'observado' | 'aprobado' | 'rechazado';
-
-export interface Observacion {
-  id: string;
-  detalle: string;
-  subsanada: boolean;
-  creado_en: string;
-}
+// ═══════════════  MS3: Revisiones, Dictámenes y Auditoría  ═══════════════
 
 export interface Revision {
   id: string;
+  informe_id: string;
   informe_version_id: string;
   revisor_id: string;
   resultado: ResultadoRevision;
   dictamen_general: string;
   fecha_revision: string;
-  observaciones: Observacion[];
+  observaciones: string[];
 }
 
 export interface CrearRevisionPayload {
+  informe_id: string;
   informe_version_id: string;
   resultado: ResultadoRevision;
   dictamen_general: string;
@@ -159,7 +163,7 @@ export interface RegistroAuditoria {
   entidad: string;
   entidad_id: string;
   accion: string;
-  metadatos: Record<string, any>;
+  metadatos: Record<string, unknown>;
   fecha: string;
 }
 
@@ -170,8 +174,44 @@ export interface AuditoriaResponse {
   offset: number;
 }
 
+// ═══════════════  MS4: Almacenamiento R2  ═══════════════
+
+export interface StorageUploadResponse {
+  file_key: string;
+  filename: string;
+  bytes: number;
+}
+
+// ═══════════════  Utilidades de UI  ═══════════════
+
 export interface CeldaInvalida {
   fila: string | number;
   columna: string;
   mensaje?: string;
+}
+
+// ═══════════════  LanguageTool  ═══════════════
+
+export interface LanguageToolMatch {
+  message: string;
+  shortMessage: string;
+  offset: number;
+  length: number;
+  replacements: { value: string }[];
+  rule: {
+    id: string;
+    description: string;
+    category: { id: string; name: string };
+  };
+  context: {
+    text: string;
+    offset: number;
+    length: number;
+  };
+}
+
+export interface LanguageToolResponse {
+  software: { name: string; version: string };
+  language: { name: string; code: string };
+  matches: LanguageToolMatch[];
 }

@@ -61,11 +61,16 @@ export function LoginForm() {
         });
 
         if (res.success && res.data?.access_token) {
-          // Check profile sync
+          // Guardar credenciales para que PerfilUsuario pueda leerlas
+          localStorage.setItem('access_token', res.data.access_token);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+
           try {
             await api.auth.syncProfile();
-          } catch {}
-          window.location.href = '/informes';
+          } catch { }
+
+          // Redirigir a la nueva pantalla de inicio
+          window.location.href = '/inicio';
         } else {
           setServerError(res.error || 'Credenciales inválidas');
         }

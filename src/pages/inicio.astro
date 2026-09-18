@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { PerfilUsuario } from '../components/perfil/PerfilUsuario';
+---
+
+<DashboardLayout title="Inicio" seccion="Panel Principal" subtitulo="Mi Perfil">
+  <PerfilUsuario client:only="react" />
+</DashboardLayout>

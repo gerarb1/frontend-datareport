@@ -1,4 +1,9 @@
-import { supabase } from './supabase';
+// ─────────────────────────────────────────────────────────────
+// api.ts — Cliente HTTP desacoplado que enruta cada petición
+// al subdominio correcto según la variable de entorno de cada
+// microservicio. Sin Supabase, sin PUBLIC_API_BASE_URL.
+// ─────────────────────────────────────────────────────────────
+
 import type {
   ApiResponse,
   Usuario,
@@ -13,30 +18,25 @@ import type {
   InformeVersion,
   CrearVersionPayload,
   HistorialTransicion,
-  PresignedUrlRequest,
-  PresignedUrlResponse,
   Revision,
   CrearRevisionPayload,
   MetricasDashboard,
   AuditoriaResponse,
+  StorageUploadResponse,
 } from './types';
 
-const API_BASE = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8787/api/v1';
+// ═══════════════  URLs de los 4 Microservicios  ═══════════════
 
-export async function getAuthToken(): Promise<string | null> {
+const MS_AUTH     = import.meta.env.PUBLIC_MS_AUTH_URL     ?? 'http://localhost:8787';
+const MS_ACADEMIC = import.meta.env.PUBLIC_MS_ACADEMIC_URL ?? 'http://localhost:8788';
+const MS_REVIEWS  = import.meta.env.PUBLIC_MS_REVIEWS_URL  ?? 'http://localhost:8789';
+const MS_STORAGE  = import.meta.env.PUBLIC_MS_STORAGE_URL  ?? 'http://localhost:8790';
+
+// ═══════════════  Token Management  ═══════════════
+
+export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  const stored = localStorage.getItem('iasa_access_token');
-  if (stored) return stored;
-
-  try {
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.access_token) {
-      return data.session.access_token;
-    }
-  } catch (err) {
-    console.warn('Error fetching Supabase session:', err);
-  }
-  return null;
+  return localStorage.getItem('iasa_access_token');
 }
 
 export function setAuthToken(token: string | null) {
@@ -71,8 +71,14 @@ export function setStoredUser(user: Usuario | null) {
   }
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = await getAuthToken();
+// ═══════════════  Fetch genérico con Auth  ═══════════════
+
+async function apiFetch<T>(
+  baseUrl: string,
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const token = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -82,13 +88,13 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const url = `${baseUrl}${path}`;
   const res = await fetch(url, {
     ...options,
     headers,
   });
 
-  let data: any;
+  let data: unknown;
   const text = await res.text();
   try {
     data = text ? JSON.parse(text) : {};
@@ -97,17 +103,23 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   }
 
   if (!res.ok) {
-    const errorMsg = data?.error || data?.message || `Error HTTP ${res.status}`;
+    const errorMsg =
+      (data as Record<string, string>)?.error ??
+      (data as Record<string, string>)?.message ??
+      `Error HTTP ${res.status}`;
     throw new Error(errorMsg);
   }
 
   return data as T;
 }
 
+// ═══════════════  API pública  ═══════════════
+
 export const api = {
+  // ───── MS1: Autenticación y Perfiles ─────
   auth: {
     login: async (payload: { email: string; password: string }): Promise<ApiResponse<LoginResponse>> => {
-      const res = await apiFetch<ApiResponse<LoginResponse>>('/auth/login', {
+      const res = await apiFetch<ApiResponse<LoginResponse>>(MS_AUTH, '/api/v1/auth/login', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -119,35 +131,45 @@ export const api = {
       }
       return res;
     },
+
     register: (payload: { email: string; password: string; nombre: string }): Promise<ApiResponse<RegisterResponse>> =>
-      apiFetch('/auth/register', {
+      apiFetch(MS_AUTH, '/api/v1/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
     syncProfile: (): Promise<ApiResponse<SyncProfileResponse>> =>
-      apiFetch('/auth/sync-profile', {
+      apiFetch(MS_AUTH, '/api/v1/auth/sync-profile', {
         method: 'POST',
         body: JSON.stringify({}),
       }),
+
     me: async (): Promise<ApiResponse<Usuario>> => {
-      const res = await apiFetch<ApiResponse<Usuario>>('/auth/me');
+      const res = await apiFetch<ApiResponse<Usuario>>(MS_AUTH, '/api/v1/auth/me');
       if (res.data) {
         setStoredUser(res.data);
       }
       return res;
     },
-    logout: async () => {
+
+    updateRole: (userId: string, rol: string): Promise<ApiResponse<Usuario>> =>
+      apiFetch(MS_AUTH, `/api/v1/auth/users/${userId}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ rol }),
+      }),
+
+    logout: () => {
       setAuthToken(null);
-      try {
-        await supabase.auth.signOut();
-      } catch {}
     },
   },
 
+  // ───── MS2: Gestión Académica e Informes ─────
   proyectos: {
-    listar: (): Promise<ApiResponse<Proyecto[]>> => apiFetch('/proyectos'),
+    listar: (): Promise<ApiResponse<Proyecto[]>> =>
+      apiFetch(MS_ACADEMIC, '/api/v1/proyectos'),
+
     crear: (payload: CrearProyectoPayload): Promise<ApiResponse<Proyecto>> =>
-      apiFetch('/proyectos', {
+      apiFetch(MS_ACADEMIC, '/api/v1/proyectos', {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
@@ -155,66 +177,167 @@ export const api = {
 
   informes: {
     crear: (payload: CrearInformePayload): Promise<ApiResponse<Informe>> =>
-      apiFetch('/informes', {
+      apiFetch(MS_ACADEMIC, '/api/v1/informes', {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
     transicion: (id: string, payload: TransicionInformePayload): Promise<ApiResponse<Informe>> =>
-      apiFetch(`/informes/${id}/transicion`, {
+      apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}/transicion`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
     crearVersion: (id: string, payload: CrearVersionPayload): Promise<ApiResponse<InformeVersion>> =>
-      apiFetch(`/informes/${id}/versiones`, {
+      apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}/versiones`, {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
     historial: (id: string): Promise<ApiResponse<HistorialTransicion[]>> =>
-      apiFetch(`/informes/${id}/historial`),
+      apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}/historial`),
   },
 
-  storage: {
-    presignedUrl: (payload: PresignedUrlRequest): Promise<ApiResponse<PresignedUrlResponse>> =>
-      apiFetch('/storage/presigned-url', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }),
-    uploadToR2: async (uploadUrl: string, file: File | Blob, mimeType?: string): Promise<void> => {
-      const res = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': mimeType || file.type || 'application/octet-stream',
-        },
-      });
-      if (!res.ok) {
-        throw new Error(`Error al subir archivo a R2: ${res.status} ${res.statusText}`);
-      }
-    },
-  },
-
+  // ───── MS3: Revisiones, Dictámenes y Auditoría ─────
   revisiones: {
     crear: (payload: CrearRevisionPayload): Promise<ApiResponse<Revision>> =>
-      apiFetch('/revisiones', {
+      apiFetch(MS_REVIEWS, '/api/v1/revisiones', {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
   },
 
   metrics: {
-    dashboard: (): Promise<ApiResponse<MetricasDashboard>> => apiFetch('/metrics/dashboard'),
+    dashboard: (): Promise<ApiResponse<MetricasDashboard>> =>
+      apiFetch(MS_REVIEWS, '/api/v1/metrics/dashboard'),
+
     auditoria: (params: { limit?: number; offset?: number; entidad?: string } = {}): Promise<ApiResponse<AuditoriaResponse>> => {
       const query = new URLSearchParams();
       if (params.limit !== undefined) query.set('limit', params.limit.toString());
       if (params.offset !== undefined) query.set('offset', params.offset.toString());
       if (params.entidad) query.set('entidad', params.entidad);
       const qs = query.toString();
-      return apiFetch(`/metrics/auditoria${qs ? `?${qs}` : ''}`);
+      return apiFetch(MS_REVIEWS, `/api/v1/metrics/auditoria${qs ? `?${qs}` : ''}`);
     },
   },
 
+  // ───── MS4: Almacenamiento R2 (subida directa por stream binario) ─────
+  storage: {
+    /**
+     * Subida directa de archivo binario a R2.
+     * PUT /api/v1/storage/upload con headers especiales.
+     */
+    upload: async (params: {
+      file: File | Blob;
+      fileType: 'informe' | 'dataset';
+      targetId: string;
+      filename: string;
+      mimeType: string;
+    }): Promise<ApiResponse<StorageUploadResponse>> => {
+      const token = getAuthToken();
+      const headers: Record<string, string> = {
+        'Content-Type': params.mimeType,
+        'X-File-Type': params.fileType,
+        'X-Target-Id': params.targetId,
+        'X-Filename': params.filename,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${MS_STORAGE}/api/v1/storage/upload`, {
+        method: 'PUT',
+        headers,
+        body: params.file,
+      });
+
+      let data: unknown;
+      const text = await res.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { error: text || 'Error inesperado al subir archivo' };
+      }
+
+      if (!res.ok) {
+        const errorMsg =
+          (data as Record<string, string>)?.error ??
+          `Error al subir archivo a R2: ${res.status} ${res.statusText}`;
+        throw new Error(errorMsg);
+      }
+
+      return data as ApiResponse<StorageUploadResponse>;
+    },
+
+    /**
+     * URL de descarga / previsualización de archivos almacenados en R2.
+     */
+    getFileUrl: (fileKey: string): string =>
+      `${MS_STORAGE}/api/v1/storage/file/${fileKey}`,
+  },
+
+  // ───── Health Checks (uno por microservicio) ─────
   health: {
-    check: (): Promise<ApiResponse<{ status: string; timestamp: string; version: string }>> =>
-      apiFetch('/health'),
+    auth: (): Promise<{ status: string }> =>
+      apiFetch(MS_AUTH, '/health'),
+    academic: (): Promise<{ status: string }> =>
+      apiFetch(MS_ACADEMIC, '/health'),
+    reviews: (): Promise<{ status: string }> =>
+      apiFetch(MS_REVIEWS, '/health'),
+    storage: (): Promise<{ status: string }> =>
+      apiFetch(MS_STORAGE, '/health'),
+    /**
+     * Comprueba la salud de los 4 microservicios en paralelo.
+     * Retorna true si todos responden OK.
+     */
+    checkAll: async (): Promise<boolean> => {
+      try {
+        const results = await Promise.allSettled([
+          fetch(`${MS_AUTH}/health`),
+          fetch(`${MS_ACADEMIC}/health`),
+          fetch(`${MS_REVIEWS}/health`),
+          fetch(`${MS_STORAGE}/health`),
+        ]);
+        return results.every((r) => r.status === 'fulfilled' && r.value.ok);
+      } catch {
+        return false;
+      }
+    },
   },
 };
+
+// src/lib/api.ts
+async function fetchWithLogs(endpoint: string, options: RequestInit = {}) {
+  // 1. Verificar variables de entorno en Astro Estático
+  // IMPORTANTE: En Astro + Vite en el cliente se usa import.meta.env, NO process.env
+  const baseUrl = import.meta.env.PUBLIC_MS_ACADEMIC_URL; 
+  
+  if (!baseUrl) {
+    console.error(`🔴 [API Error]: PUBLIC_MS_ACADEMIC_URL es undefined. Revisa tus variables de entorno.`);
+  }
+
+  const url = `${baseUrl}${endpoint}`;
+  const method = options.method || 'GET';
+
+  console.log(`📡 [API OUT] -> ${method} ${url}`, options.body ? JSON.parse(options.body as string) : '');
+
+  try {
+    const response = await fetch(url, options);
+    
+    console.log(`📥 [API IN] <- Status: ${response.status} de ${url}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`🔴 [API Fail Body]:`, errorText);
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ [API Success Data]:`, data);
+    return data;
+
+  } catch (error) {
+    console.error(`💥 [API Network/Parse Error]:`, error);
+    throw error;
+  }
+}

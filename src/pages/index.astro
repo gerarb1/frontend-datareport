@@ -1,9 +1,22 @@
 ---
-const token = Astro.cookies.get('sb-access-token')?.value;
-
-if (!token) {
-  return Astro.redirect('/login');
-} else {
-  return Astro.redirect('/informes');
-}
+// src/pages/index.astro
+// Enrutamiento 100% estático ejecutado en el cliente
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
+
+<BaseLayout title="Redirigiendo...">
+  <div class="h-screen w-full flex items-center justify-center bg-base text-ink font-mono text-xs">
+    Verificando sesión...
+  </div>
+</BaseLayout>
+
+<script>
+  // Script que se ejecuta inmediatamente en el navegador
+  const token = localStorage.getItem('access_token');
+  
+  if (token) {
+    window.location.replace('/informes');
+  } else {
+    window.location.replace('/login');
+  }
+</script>

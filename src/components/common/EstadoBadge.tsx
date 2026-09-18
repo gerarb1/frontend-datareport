@@ -9,21 +9,15 @@ interface EstadoBadgeProps {
 
 const ESTILOS: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   borrador: {
-    bg: 'bg-[#8A9694]/10',
-    text: 'text-[#616B69]',
-    dot: 'bg-[#616B69]',
+    bg: 'bg-[#6B7E84]/10',
+    text: 'text-[#4A5B60]',
+    dot: 'bg-[#6B7E84]',
     label: 'Borrador',
   },
-  recibido: {
-    bg: 'bg-[#8A9694]/15',
-    text: 'text-[#545F5E]',
-    dot: 'bg-[#8A9694]',
-    label: 'Recibido',
-  },
   enviado: {
-    bg: 'bg-[#136F63]/10',
-    text: 'text-[#136F63]',
-    dot: 'bg-[#136F63]',
+    bg: 'bg-[#3B6EA5]/10',
+    text: 'text-[#2C5684]',
+    dot: 'bg-[#3B6EA5]',
     label: 'Enviado',
   },
   en_revision: {
@@ -37,12 +31,6 @@ const ESTILOS: Record<string, { bg: string; text: string; dot: string; label: st
     text: 'text-[#A05C18]',
     dot: 'bg-[#C97A2B]',
     label: 'Observado',
-  },
-  corregido: {
-    bg: 'bg-[#3B6EA5]/15',
-    text: 'text-[#2C5684]',
-    dot: 'bg-[#3B6EA5]',
-    label: 'Corregido',
   },
   aprobado: {
     bg: 'bg-[#3E7D53]/15',
@@ -58,12 +46,13 @@ const ESTILOS: Record<string, { bg: string; text: string; dot: string; label: st
   },
 };
 
-export function EstadoBadge({ estado, className = '', showDot = true }: EstadoBadgeProps) {
-  const config = ESTILOS[estado] || {
+export function EstadoBadge({ estado = 'borrador', className = '', showDot = true }: EstadoBadgeProps) {
+  const safeEstado = estado || 'borrador';
+  const config = ESTILOS[safeEstado] || {
     bg: 'bg-gray-100',
     text: 'text-gray-700',
     dot: 'bg-gray-500',
-    label: estado.replace('_', ' '),
+    label: safeEstado.replace('_', ' '),
   };
 
   return (

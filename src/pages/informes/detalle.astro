@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import { DetalleInformeWrapper } from '../../components/informes/DetalleInformeView';
+---
+
+<DashboardLayout 
+  title="Expediente QC · DataReport" 
+  seccion="Calidad" 
+  subtitulo="Detalle de Informe"
+>
+  <div class="max-w-7xl mx-auto">
+    <!-- Ya no pasamos el ID desde el servidor de Astro -->
+    <DetalleInformeWrapper client:only="react" />
+  </div>
+</DashboardLayout>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '@/lib/api';
-import { Upload, CheckCircle2, AlertCircle, FileText, X } from 'lucide-react';
+import { Upload, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 interface SubirVersionModalProps {
   informeId: string;
@@ -9,15 +9,25 @@ interface SubirVersionModalProps {
   onSuccess: () => void;
 }
 
+const ALLOWED_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/csv',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+];
+
+const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB para informes
+
 export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: SubirVersionModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [resumenCambios, setResumenCambios] = useState('');
-  const [paso, setPaso] = useState<'idle' | 'presigning' | 'uploading_r2' | 'registering' | 'done'>('idle');
+  const [paso, setPaso] = useState<'idle' | 'uploading_r2' | 'hashing' | 'registering' | 'done'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  // Cálculo de hash sha256 del archivo
+  // Cálculo de hash SHA-256 del archivo
   async function calcularSHA256(archivo: File): Promise<string> {
     const buffer = await archivo.arrayBuffer();
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -28,7 +38,11 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      setErrorMsg('Por favor selecciona un archivo PDF o DOCX');
+      setErrorMsg('Por favor selecciona un archivo');
+      return;
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      setErrorMsg(`El archivo excede el límite de 15 MB (${(file.size / 1024 / 1024).toFixed(1)} MB)`);
       return;
     }
     if (!resumenCambios.trim()) {
@@ -39,34 +53,34 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
     setErrorMsg(null);
 
     try {
-      // 1. Obtener URL prefirmada de R2
-      setPaso('presigning');
-      const presignRes = await api.storage.presignedUrl({
-        tipo: 'informe',
+      // 1. Subida directa de binario a MS4 (R2)
+      setPaso('uploading_r2');
+      const mimeType = file.type || 'application/octet-stream';
+      const uploadRes = await api.storage.upload({
+        file,
+        fileType: 'informe',
+        targetId: informeId,
         filename: file.name,
-        size_bytes: file.size,
-        mime_type: file.type || 'application/pdf',
-        target_id: informeId,
+        mimeType,
       });
 
-      if (!presignRes.success || !presignRes.data?.upload_url) {
-        throw new Error(presignRes.error || 'No se pudo generar la URL de subida a R2');
+      if (!uploadRes.success || !uploadRes.data?.file_key) {
+        throw new Error(uploadRes.error || 'No se recibió file_key del microservicio de almacenamiento');
       }
 
-      const { upload_url, file_key } = presignRes.data;
+      const { file_key } = uploadRes.data;
 
-      // 2. Subida directa PUT a Cloudflare R2
-      setPaso('uploading_r2');
-      await api.storage.uploadToR2(upload_url, file, file.type);
-
-      // 3. Registrar versión en el backend
-      setPaso('registering');
+      // 2. Calcular SHA-256 en el cliente
+      setPaso('hashing');
       const hash = await calcularSHA256(file);
+
+      // 3. Registrar versión en MS2
+      setPaso('registering');
       const versionRes = await api.informes.crearVersion(informeId, {
         archivo_key_r2: file_key,
         archivo_nombre: file.name,
         archivo_tamano_bytes: file.size,
-        tipo_mime: file.type || 'application/pdf',
+        tipo_mime: mimeType,
         hash_archivo: hash,
         resumen_cambios: resumenCambios,
       });
@@ -80,8 +94,9 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
         onSuccess();
         onClose();
       }, 1200);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error en el proceso de carga a Cloudflare R2');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error en el proceso de carga a R2';
+      setErrorMsg(message);
       setPaso('idle');
     }
   };
@@ -93,7 +108,7 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
           <div>
             <h3 className="text-sm font-semibold">Subir Nueva Versión a Cloudflare R2</h3>
             <p className="text-[11px] font-mono text-ink-muted">
-              Carga directa mediante presigned-url con cálculo de integridad SHA-256
+              Carga directa de binario vía PUT con cálculo de integridad SHA-256
             </p>
           </div>
           <button onClick={onClose} className="text-ink-subtle hover:text-ink">
@@ -112,12 +127,12 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
           {/* File Picker */}
           <div>
             <label className="block font-mono font-medium mb-1.5">
-              Archivo del Documento (PDF o DOCX, máx 15MB)
+              Archivo del Documento (PDF, DOCX, CSV, XLSX — máx 15MB)
             </label>
             <div className="border border-dashed border-border rounded-[3px] p-4 text-center hover:bg-base/60 transition-colors">
               <input
                 type="file"
-                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                accept=".pdf,.docx,.csv,.xlsx,.xls,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                 className="hidden"
                 id="file-upload-input"
@@ -132,7 +147,7 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
                 ) : (
                   <>
                     <span className="font-medium text-accent hover:underline">Seleccionar archivo desde el equipo</span>
-                    <span className="text-[11px] text-ink-subtle font-mono">Límites: máx 15 MB · Formatos: .pdf, .docx</span>
+                    <span className="text-[11px] text-ink-subtle font-mono">Límites: máx 15 MB · Formatos: .pdf, .docx, .csv, .xlsx</span>
                   </>
                 )}
               </label>
@@ -157,18 +172,18 @@ export function SubirVersionModal({ informeId, isOpen, onClose, onSuccess }: Sub
           {paso !== 'idle' && (
             <div className="p-3 bg-base border border-border rounded-[3px] font-mono text-[11px] space-y-1">
               <div className="flex items-center gap-2">
-                <span className={paso === 'presigning' ? 'text-accent font-semibold' : 'text-ink-subtle'}>
-                  1. Solicitando URL de subida prefirmada...
+                <span className={paso === 'uploading_r2' ? 'text-accent font-semibold' : 'text-ink-subtle'}>
+                  1. Transfiriendo archivo binario a Cloudflare R2 (PUT directo)...
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className={paso === 'uploading_r2' ? 'text-accent font-semibold' : 'text-ink-subtle'}>
-                  2. Transfiriendo archivo binario a Cloudflare R2...
+                <span className={paso === 'hashing' ? 'text-accent font-semibold' : 'text-ink-subtle'}>
+                  2. Calculando checksum SHA-256 del archivo...
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={paso === 'registering' ? 'text-accent font-semibold' : 'text-ink-subtle'}>
-                  3. Registrando versión y hash SHA-256 en API...
+                  3. Registrando versión en MS Academic...
                 </span>
               </div>
               {paso === 'done' && (
