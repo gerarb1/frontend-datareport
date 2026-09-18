@@ -1,6 +1,8 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { AppProviders } from '../providers/AppProviders';
+import { AuthGuard } from '../auth/AuthGuard';
 import type { MetricasDashboard, EstadoInforme } from '@/lib/types';
 import { EstadoBadge } from '@/components/common/EstadoBadge';
 import { BarChart3, FolderKanban, FileText, CheckCircle2, RefreshCw } from 'lucide-react';
@@ -135,5 +137,15 @@ export function MetricasCards() {
         </>
       )}
     </div>
+  );
+}
+
+export function MetricasView() {
+  return (
+    <AppProviders>
+      <AuthGuard allowedRoles={['revisor', 'superadmin']}>
+        <MetricasCards />
+      </AuthGuard>
+    </AppProviders>
   );
 }

@@ -8,6 +8,7 @@ import { SubirVersionModal } from './SubirVersionModal';
 import { TablaDatosGrid } from './TablaDatosGrid';
 import { Upload, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { EstadoBadge } from '../common/EstadoBadge';
+import { api } from '@/lib/api';
 
 function DetalleInformeContent({ informeId }: { informeId: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,14 +16,8 @@ function DetalleInformeContent({ informeId }: { informeId: string }) {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['informe', informeId],
     queryFn: async () => {
-      const baseUrl = import.meta.env.PUBLIC_MS_ACADEMIC_URL;
-      const token = localStorage.getItem('iasa_access_token');
-      const res = await fetch(`${baseUrl}/api/v1/informes/${informeId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Error al cargar detalles del informe');
-      const json = await res.json();
-      return json.data || json;
+      const res = await api.informes.obtener(informeId);
+      return (res as any).data || res;
     }
   });
 

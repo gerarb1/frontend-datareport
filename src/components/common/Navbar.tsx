@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Home, FileText, Folder, Activity, LogOut, User } from 'lucide-react';
+import { Menu, X, Home, FileText, Folder, Activity, ShieldCheck, LogOut } from 'lucide-react';
 import { getStoredUser, api } from '@/lib/api';
 
 export function Navbar() {
@@ -19,8 +19,9 @@ export function Navbar() {
   const navLinks = [
     { name: 'Inicio', href: '/inicio', icon: Home, roles: ['auxiliar', 'investigador', 'revisor', 'superadmin'] },
     { name: 'Proyectos', href: '/proyectos', icon: Folder, roles: ['investigador', 'superadmin'] },
-    { name: 'Informes', href: '/informes', icon: FileText, roles: ['investigador', 'revisor', 'superadmin'] },
+    { name: 'Informes', href: '/informes', icon: FileText, roles: ['auxiliar', 'investigador', 'revisor', 'superadmin'] },
     { name: 'Métricas', href: '/admin/dashboard', icon: Activity, roles: ['revisor', 'superadmin'] },
+    { name: 'Auditoría', href: '/admin/auditoria', icon: ShieldCheck, roles: ['superadmin'] },
   ];
 
   const filteredLinks = navLinks.filter(link => user && link.roles.includes(user.rol));

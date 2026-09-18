@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { AppProviders } from '../providers/AppProviders';
+import { AuthGuard } from '../auth/AuthGuard';
 import type { AuditoriaResponse } from '@/lib/types';
 import { ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
@@ -159,5 +161,15 @@ export function AuditoriaTabla() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function AuditoriaView() {
+  return (
+    <AppProviders>
+      <AuthGuard allowedRoles={['superadmin']}>
+        <AuditoriaTabla />
+      </AuthGuard>
+    </AppProviders>
   );
 }

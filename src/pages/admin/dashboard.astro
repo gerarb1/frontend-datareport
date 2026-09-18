@@ -1,9 +1,6 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-import { withProvider } from "../../components/providers/AppProviders";
-import { MetricasCards } from "../../components/admin/MetricasCards";
-
-const MetricasCardsView = withProvider(MetricasCards);
+import { MetricasView } from "../../components/admin/MetricasCards";
 ---
 
 <DashboardLayout
@@ -11,5 +8,5 @@ const MetricasCardsView = withProvider(MetricasCards);
   seccion="Supervisión"
   subtitulo="Métricas"
 >
-  <MetricasCardsView client:only="react" />
+  <MetricasView client:only="react" />
 </DashboardLayout>

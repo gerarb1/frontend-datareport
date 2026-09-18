@@ -5,19 +5,14 @@ import { AuthGuard } from '../auth/AuthGuard';
 import { FileText, ArrowRight, AlertCircle } from 'lucide-react';
 import { EstadoBadge } from '../common/EstadoBadge';
 
+import { api } from '@/lib/api';
+
 function InformesListaContent() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['informes'],
     queryFn: async () => {
-      // Fetch directo para evitar errores si api.ts no tiene listar()
-      const baseUrl = import.meta.env.PUBLIC_MS_ACADEMIC_URL;
-      const token = localStorage.getItem('iasa_access_token');
-      const res = await fetch(`${baseUrl}/api/v1/informes`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Error al cargar la lista de informes');
-      const json = await res.json();
-      return json.data || json || [];
+      const res = await api.informes.listar();
+      return (res as any).data || res || [];
     }
   });
 
@@ -66,7 +61,7 @@ function InformesListaContent() {
             </div>
 
             <div className="flex items-center gap-6">
-              <EstadoBadge estado={informe.estado_actual} />
+              <EstadoBadge estado={informe.estado_actual || informe.estado || 'borrador'} />
               <a
                 href={`/informes/detalle?id=${informe.id}`}
                 className="flex items-center gap-1 text-xs font-medium text-accent hover:underline"

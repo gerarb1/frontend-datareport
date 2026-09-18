@@ -36,24 +36,25 @@ const MS_STORAGE  = import.meta.env.PUBLIC_MS_STORAGE_URL  ?? 'http://localhost:
 
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('iasa_access_token');
+  return localStorage.getItem('access_token') || localStorage.getItem('iasa_access_token');
 }
 
 export function setAuthToken(token: string | null) {
   if (typeof window === 'undefined') return;
   if (token) {
+    localStorage.setItem('access_token', token);
     localStorage.setItem('iasa_access_token', token);
-    document.cookie = `sb-access-token=${token}; path=/; max-age=604800; SameSite=Lax`;
   } else {
+    localStorage.removeItem('access_token');
     localStorage.removeItem('iasa_access_token');
+    localStorage.removeItem('user');
     localStorage.removeItem('iasa_user');
-    document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   }
 }
 
 export function getStoredUser(): Usuario | null {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem('iasa_user');
+  const raw = localStorage.getItem('user') || localStorage.getItem('iasa_user');
   if (!raw) return null;
   try {
     return JSON.parse(raw);
@@ -65,8 +66,10 @@ export function getStoredUser(): Usuario | null {
 export function setStoredUser(user: Usuario | null) {
   if (typeof window === 'undefined') return;
   if (user) {
+    localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('iasa_user', JSON.stringify(user));
   } else {
+    localStorage.removeItem('user');
     localStorage.removeItem('iasa_user');
   }
 }
@@ -176,6 +179,17 @@ export const api = {
   },
 
   informes: {
+    listar: (params?: { proyecto_id?: string; estado?: string }): Promise<ApiResponse<Informe[]>> => {
+      const query = new URLSearchParams();
+      if (params?.proyecto_id) query.set('proyecto_id', params.proyecto_id);
+      if (params?.estado && params.estado !== 'todos') query.set('estado', params.estado);
+      const qs = query.toString();
+      return apiFetch(MS_ACADEMIC, `/api/v1/informes${qs ? `?${qs}` : ''}`);
+    },
+
+    obtener: (id: string): Promise<ApiResponse<Informe>> =>
+      apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}`),
+
     crear: (payload: CrearInformePayload): Promise<ApiResponse<Informe>> =>
       apiFetch(MS_ACADEMIC, '/api/v1/informes', {
         method: 'POST',
@@ -193,6 +207,9 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+
+    versiones: (id: string): Promise<ApiResponse<InformeVersion[]>> =>
+      apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}/versiones`),
 
     historial: (id: string): Promise<ApiResponse<HistorialTransicion[]>> =>
       apiFetch(MS_ACADEMIC, `/api/v1/informes/${id}/historial`),
@@ -305,39 +322,3 @@ export const api = {
     },
   },
 };
-
-// src/lib/api.ts
-async function fetchWithLogs(endpoint: string, options: RequestInit = {}) {
-  // 1. Verificar variables de entorno en Astro Estático
-  // IMPORTANTE: En Astro + Vite en el cliente se usa import.meta.env, NO process.env
-  const baseUrl = import.meta.env.PUBLIC_MS_ACADEMIC_URL; 
-  
-  if (!baseUrl) {
-    console.error(`🔴 [API Error]: PUBLIC_MS_ACADEMIC_URL es undefined. Revisa tus variables de entorno.`);
-  }
-
-  const url = `${baseUrl}${endpoint}`;
-  const method = options.method || 'GET';
-
-  console.log(`📡 [API OUT] -> ${method} ${url}`, options.body ? JSON.parse(options.body as string) : '');
-
-  try {
-    const response = await fetch(url, options);
-    
-    console.log(`📥 [API IN] <- Status: ${response.status} de ${url}`);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`🔴 [API Fail Body]:`, errorText);
-      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log(`✅ [API Success Data]:`, data);
-    return data;
-
-  } catch (error) {
-    console.error(`💥 [API Network/Parse Error]:`, error);
-    throw error;
-  }
-}

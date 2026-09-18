@@ -1,7 +1,6 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-import { AppProviders } from "../../components/providers/AppProviders";
-import { AuditoriaTabla } from "../../components/admin/AuditoriaTabla";
+import { AuditoriaView } from "../../components/admin/AuditoriaTabla";
 ---
 
 <DashboardLayout
@@ -9,7 +8,5 @@ import { AuditoriaTabla } from "../../components/admin/AuditoriaTabla";
   seccion="Supervisión"
   subtitulo="Auditoría"
 >
-  <AppProviders client:load>
-    <AuditoriaTabla />
-  </AppProviders>
+  <AuditoriaView client:only="react" />
 </DashboardLayout>

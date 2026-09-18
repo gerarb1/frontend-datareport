@@ -1,7 +1,7 @@
 ---
 // src/layouts/DashboardLayout.astro
 import BaseLayout from './BaseLayout.astro';
-import { Sidebar } from '../components/common/Sidebar';
+import { Navbar } from '../components/common/Navbar';
 
 interface Props {
   title?: string;
@@ -9,21 +9,34 @@ interface Props {
   subtitulo?: string;
 }
 
-const { title, seccion = 'Módulo', subtitulo } = Astro.props;
-const currentPath = Astro.url.pathname;
+const { title, seccion, subtitulo } = Astro.props;
 ---
 
 <BaseLayout title={title}>
-  <div class="flex h-screen overflow-hidden">
-    <Sidebar client:load currentPath={currentPath} />
+  <div class="min-h-screen flex flex-col bg-base text-ink">
+    <!-- Navbar Global Estático con Auth y Enlaces por Rol -->
+    <Navbar client:load />
 
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-base">
-      <header class="h-12 bg-white border-b border-border px-6 flex items-center justify-between shrink-0 select-none">
-        {/* Tu código del header se mantiene intacto */}
-      </header>
+    <div class="flex-1 pt-14 flex flex-col min-w-0">
+      {(seccion || subtitulo) && (
+        <header class="h-10 bg-white border-b border-border px-4 sm:px-6 flex items-center justify-between shrink-0 select-none">
+          <div class="flex items-center gap-2">
+            {seccion && (
+              <span class="text-xs uppercase font-mono tracking-wider text-ink-subtle">{seccion}</span>
+            )}
+            {seccion && subtitulo && <span class="text-border">/</span>}
+            {subtitulo && (
+              <span class="text-xs font-semibold text-ink truncate">{subtitulo}</span>
+            )}
+          </div>
+          <div class="text-[11px] font-mono text-ink-muted hidden sm:flex items-center gap-2">
+            <span class="bg-[#F0F2F0] px-2 py-0.5 border border-border rounded-[2px]">IASA DataReport · QC</span>
+          </div>
+        </header>
+      )}
 
-      <main class="flex-1 overflow-y-auto p-6">
-        <!-- El slot se renderiza como HTML puro sin islas intermedias -->
+      <!-- Contenedor responsivo principal -->
+      <main class="flex-1 p-4 sm:p-6 overflow-y-auto max-w-7xl w-full mx-auto">
         <slot />
       </main>
     </div>
