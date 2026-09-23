@@ -1,0 +1,8 @@
+{
+  "name": "frontend-datareport",
+  "main": "dist/server/entry.js",
+  "assets": {
+    "directory": "dist/client"
+  },
+  "compatibility_date": "2026-09-01"
+}
