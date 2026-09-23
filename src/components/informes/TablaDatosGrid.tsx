@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { DataGrid } from 'react-data-grid';
 import 'react-data-grid/lib/styles.css';
 import { read, utils, writeFile } from 'xlsx';
-import { AlertTriangle, Download, Save, Upload, FileSpreadsheet } from 'lucide-react';
+import { AlertCircle, Download, Upload, FileSpreadsheet } from 'lucide-react';
 
 interface TablaDatosGridProps {
   informeId: string;
@@ -51,9 +51,9 @@ export function TablaDatosGrid({ informeId, readonly = false }: TablaDatosGridPr
         const error = anomalias.find(a => a.filaIdx === props.rowIdx && a.colKey === key);
         if (error) {
           return (
-            <div title={error.msj} className="flex items-center justify-between bg-red-50 text-alarma font-bold w-full h-full px-2">
+            <div title={error.msj} className="flex items-center justify-between bg-red-50 text-[#D93025] font-semibold w-full h-full px-2 border-l-2 border-l-[#D93025]">
               <span>{props.row[key]}</span>
-              <AlertTriangle className="w-3 h-3" />
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 ml-1 text-[#D93025]" />
             </div>
           );
         }
@@ -92,15 +92,15 @@ export function TablaDatosGrid({ informeId, readonly = false }: TablaDatosGridPr
   };
 
   return (
-    <div className="bg-white border border-border rounded-[3px] space-y-0 overflow-hidden">
-      <div className="p-4 border-b border-border bg-base/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="bg-white border border-[#E0E3E7] rounded-xl space-y-0 overflow-hidden shadow-google">
+      <div className="p-4 border-b border-[#E0E3E7] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider font-mono text-ink flex items-center gap-2">
-            <FileSpreadsheet className="w-4 h-4 text-accent" />
+          <h3 className="text-sm font-bold text-[#202124] flex items-center gap-2">
+            <FileSpreadsheet className="w-4 h-4 text-[#1A73E8]" />
             Módulo de Edición de Datos Científicos
           </h3>
-          <p className="text-[11px] font-mono text-ink-muted mt-1">
-            Procesamiento en navegador. No consume base de datos.
+          <p className="text-xs text-[#5F6368] mt-0.5">
+            Procesamiento en memoria de navegador. Validación física en tiempo real.
           </p>
         </div>
 
@@ -114,41 +114,52 @@ export function TablaDatosGrid({ informeId, readonly = false }: TablaDatosGridPr
           />
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:bg-base text-ink text-xs font-mono rounded-[3px] transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 border border-[#E0E3E7] hover:bg-gray-50 text-[#202124] text-xs font-medium rounded-lg transition"
           >
-            <Upload className="w-3.5 h-3.5" /> Importar Archivo
+            <Upload className="w-3.5 h-3.5 text-[#5F6368]" />
+            <span>Importar Archivo</span>
           </button>
 
           {filas.length > 0 && (
             <button 
               onClick={exportarExcelCorregido}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-mono rounded-[3px] transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1E8E3E] hover:bg-[#188038] text-white text-xs font-semibold rounded-lg transition shadow-xs"
             >
-              <Download className="w-3.5 h-3.5" /> Exportar Corregido
+              <Download className="w-3.5 h-3.5" />
+              <span>Exportar Corregido</span>
             </button>
           )}
         </div>
       </div>
 
       {anomalias.length > 0 && (
-        <div className="px-4 py-2 bg-red-50 border-b border-alarma/20 flex items-center gap-2 text-xs font-mono text-alarma">
-          <AlertTriangle className="w-4 h-4" />
-          <span>Se detectaron {anomalias.length} celdas con valores fuera de parámetros físicos posibles. Doble clic para editar.</span>
+        <div className="px-4 py-3 bg-[#FCE8E6] border-b border-[#FAD2CF] flex items-center gap-2.5 text-xs text-[#D93025]">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>
+            Se detectaron <strong>{anomalias.length}</strong> celdas con valores fuera de tolerancias físicas posibles. Haz doble clic para editar.
+          </span>
         </div>
       )}
 
-      <div className="h-[400px] w-full">
+      <div className="h-[420px] w-full">
         {filas.length > 0 ? (
           <DataGrid 
             columns={columnas} 
             rows={filas} 
             onRowsChange={handleRowsChange}
-            className="h-full text-xs"
+            className="h-full text-xs font-mono"
           />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-ink-subtle border-t border-border border-dashed m-4 rounded-[3px] bg-base/50">
-            <FileSpreadsheet className="w-8 h-8 mb-2 opacity-50" />
-            <p className="font-mono text-xs">Sube un archivo Excel o CSV adjunto al informe para visualizarlo y editarlo.</p>
+          <div className="h-full flex flex-col items-center justify-center text-[#5F6368] p-8 bg-[#F8F9FA]">
+            <FileSpreadsheet className="w-10 h-10 mb-3 text-[#BDC1C6]" />
+            <p className="text-xs font-medium text-[#202124]">No hay datos cargados en la grilla</p>
+            <p className="text-xs text-[#5F6368] mt-1">Importa un archivo Excel (.xlsx, .xls) o CSV adjunto al informe para inspeccionarlo.</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-4 px-4 py-2 bg-white border border-[#E0E3E7] hover:bg-gray-50 rounded-lg text-xs font-semibold text-[#1A73E8] shadow-xs transition"
+            >
+              Seleccionar Archivo de Muestreo
+            </button>
           </div>
         )}
       </div>

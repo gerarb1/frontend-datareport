@@ -4,36 +4,49 @@ export default {
   theme: {
     extend: {
       colors: {
-        base: '#F5F6F4',
+        base: '#F8F9FA',
+        surface: '#FFFFFF',
         ink: {
-          DEFAULT: '#1E2A2E',
-          muted: '#4A5B60',
-          subtle: '#6B7E84',
+          DEFAULT: '#202124',
+          muted: '#5F6368',
+          subtle: '#80868B',
         },
         accent: {
-          DEFAULT: '#136F63',
-          hover: '#0F574E',
-          subtle: '#E6F1F0',
+          DEFAULT: '#1A73E8',
+          hover: '#1557B0',
+          subtle: '#E8F0FE',
         },
-        border: '#A9B4B3',
+        border: '#E0E3E7',
         estado: {
-          borrador: '#6B7E84',
-          enviado: '#3B6EA5',
-          revision: '#136F63',
-          observado: '#C97A2B',
-          aprobado: '#3E7D53',
-          rechazado: '#C4432B',
+          borrador: '#5F6368',
+          enviado: '#1A73E8',
+          revision: '#1A73E8',
+          observado: '#E37400',
+          aprobado: '#1E8E3E',
+          rechazado: '#D93025',
         },
-        alarma: '#C4432B', // solo para celdas de datos fuera de rango
+        alarma: '#D93025',
+        google: {
+          blue: '#1A73E8',
+          green: '#1E8E3E',
+          yellow: '#E37400',
+          red: '#D93025',
+          gray: '#5F6368',
+        },
       },
       fontFamily: {
-        sans: ['"IBM Plex Sans"', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'monospace'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
+      boxShadow: {
+        'google': '0 1px 2px 0 rgba(60,64,67,0.1), 0 1px 3px 1px rgba(60,64,67,0.05)',
+        'google-hover': '0 1px 3px 0 rgba(60,64,67,0.2), 0 4px 8px 3px rgba(60,64,67,0.1)',
       },
       borderRadius: {
-        DEFAULT: '4px',
+        DEFAULT: '8px',
       },
     },
   },
   plugins: [],
 }
+

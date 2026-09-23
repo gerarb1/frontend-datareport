@@ -12,16 +12,16 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("🔴 [Error Fatal de React]:", error, errorInfo);
+    console.error("[Error Fatal de React]:", error, errorInfo);
   }
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="p-6 m-4 bg-alarma/10 border border-alarma text-alarma rounded-[3px] font-mono text-xs">
-          <h2 className="font-bold text-sm mb-2">Fallo crítico en el renderizado</h2>
-          <p className="mb-4">El componente colapsó. Revisa la consola (F12) para más detalles.</p>
-          <pre className="overflow-auto bg-white p-2 border border-border">
+        <div className="p-6 m-4 bg-[#FCE8E6] border border-[#FAD2CF] text-[#D93025] rounded-xl font-mono text-xs shadow-sm">
+          <h2 className="font-bold text-sm mb-2">Fallo en el renderizado de la interfaz</h2>
+          <p className="mb-4">El componente colapsó. Revisa la consola para más detalles técnicos.</p>
+          <pre className="overflow-auto bg-white p-3 border border-[#FAD2CF] rounded-lg text-[#202124]">
             {this.state.error?.toString()}
           </pre>
         </div>

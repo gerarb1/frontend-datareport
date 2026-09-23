@@ -1,149 +1,207 @@
-import React, { useEffect, useState } from 'react';
-import {
-  FolderKanban,
-  FileText,
-  BarChart3,
-  ShieldCheck,
-  LogOut,
-  User as UserIcon,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, FileText, Folder, BarChart2, ShieldCheck, LogOut, Menu, X, CheckSquare } from 'lucide-react';
 import { getStoredUser, api } from '@/lib/api';
-import type { Usuario, Rol } from '@/lib/types';
 
 interface SidebarProps {
   currentPath?: string;
 }
 
-export function Sidebar({ currentPath = '' }: SidebarProps) {
-  const [user, setUser] = useState<Usuario | null>(null);
-  const [healthOk, setHealthOk] = useState<boolean | null>(null);
+export function Sidebar({ currentPath }: SidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [user, setUser] = useState<{ nombre: string; email: string; rol: string } | null>(null);
 
   useEffect(() => {
     const stored = getStoredUser();
-    if (stored) {
-      setUser(stored);
-    } else {
-      api.auth.me().then((res) => {
-        if (res.data) setUser(res.data);
-      }).catch(() => {});
-    }
-
-    // Health check contra los 4 microservicios
-    api.health.checkAll()
-      .then((ok) => setHealthOk(ok))
-      .catch(() => setHealthOk(false));
+    if (stored) setUser(stored as any);
   }, []);
-
-  const rol: Rol = user?.rol || 'investigador';
-
-  const menuItems = [
-    {
-      title: 'Proyectos',
-      href: '/proyectos',
-      icon: FolderKanban,
-      visible: true,
-    },
-    {
-      title: 'Informes y Trabajos',
-      href: '/informes',
-      icon: FileText,
-      visible: true,
-    },
-    {
-      title: 'Panel Métricas',
-      href: '/admin/dashboard',
-      icon: BarChart3,
-      visible: rol === 'superadmin' || rol === 'revisor',
-    },
-    {
-      title: 'Registro Auditoría',
-      href: '/admin/auditoria',
-      icon: ShieldCheck,
-      visible: rol === 'superadmin',
-    },
-  ];
 
   const handleLogout = () => {
     api.auth.logout();
-    window.location.href = '/login';
+    window.location.replace('/login');
+  };
+
+  interface NavItem {
+    name: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    roles: string[];
+    badge?: string;
+  }
+
+  interface NavSection {
+    title: string;
+    items: NavItem[];
+  }
+
+  const navSections: NavSection[] = [
+    {
+      title: 'General',
+      items: [
+        { name: 'Inicio', href: '/inicio', icon: Home, roles: ['auxiliar', 'investigador', 'revisor', 'superadmin'] },
+        { name: 'Informes', href: '/informes', icon: FileText, roles: ['auxiliar', 'investigador', 'revisor', 'superadmin'] },
+        { name: 'Proyectos', href: '/proyectos', icon: Folder, roles: ['investigador', 'superadmin'] },
+      ]
+    },
+    {
+      title: 'Evaluación',
+      items: [
+        { name: 'Consola QC', href: '/informes', icon: CheckSquare, roles: ['revisor', 'superadmin'], badge: '1 act.' },
+      ]
+    },
+    {
+      title: 'Gestión',
+      items: [
+        { name: 'Telemetría', href: '/admin/dashboard', icon: BarChart2, roles: ['revisor', 'superadmin'] },
+        { name: 'Auditoría', href: '/admin/auditoria', icon: ShieldCheck, roles: ['superadmin'] },
+      ]
+    }
+  ];
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
   };
 
   return (
-    <aside className="w-64 bg-[#EBECE8] border-r border-border flex flex-col h-screen shrink-0 text-ink select-none">
-      {/* Brand Header */}
-      <div className="p-4 border-b border-border bg-[#E4E6E1]">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-accent flex items-center justify-center rounded-[3px] text-base font-bold text-white text-xs">
+    <>
+      {/* Botón flotante móvil para abrir el sidebar */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="lg:hidden fixed top-3.5 left-4 z-50 p-2 rounded-lg bg-white border border-[#E0E3E7] shadow-sm text-[#5F6368] hover:text-[#202124]"
+        title="Abrir menú"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Backdrop móvil */}
+      {isMobileOpen && (
+        <div
+          onClick={() => setIsMobileOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/30 z-40 backdrop-blur-xs transition-opacity"
+        />
+      )}
+
+      {/* Contenedor del Sidebar */}
+      <aside
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 bg-white border-r border-[#E0E3E7] flex flex-col shrink-0 select-none transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'lg:w-[72px]' : 'lg:w-64'
+        } ${isMobileOpen ? 'w-64 translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      >
+        {/* Cabecera del Sidebar con Logotipo y Botón Hamburguesa */}
+        <div className="h-16 px-4 border-b border-[#E0E3E7] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 rounded-lg bg-[#1A73E8] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
               IA
             </div>
-            <span className="font-semibold tracking-wider text-xs uppercase font-mono">IASA · DataReport</span>
+            {!isCollapsed && (
+              <div className="truncate">
+                <div className="font-bold text-sm text-[#202124] tracking-tight">IASA DataReport</div>
+                <p className="text-[11px] text-[#5F6368] leading-tight">Control de Calidad</p>
+              </div>
+            )}
           </div>
-          <span
-            title={healthOk === true ? 'Microservicios En Línea' : healthOk === false ? 'Microservicios Sin Conexión' : 'Verificando...'}
-            className={`w-2 h-2 rounded-full ${
-              healthOk === true
-                ? 'bg-estado-aprobado'
-                : healthOk === false
-                ? 'bg-alarma'
-                : 'bg-estado-borrador animate-pulse'
-            }`}
-          />
-        </div>
-        <div className="text-[11px] text-ink-muted font-mono flex items-center gap-1 mt-1">
-          <span>SISTEMA QC</span>
-          <span>·</span>
-          <span className="text-accent font-semibold uppercase">{rol}</span>
-        </div>
-      </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-ink-subtle">
-          Módulos de Control
+          {/* Botón Hamburguesa Desktop */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex p-1.5 rounded-lg hover:bg-gray-100 text-[#5F6368] hover:text-[#202124] transition shrink-0"
+            title={isCollapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Botón Cerrar Móvil */}
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-[#5F6368]"
+            title="Cerrar menú"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        {menuItems
-          .filter((item) => item.visible)
-          .map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href));
+
+        {/* Enlaces de Navegación */}
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+          {navSections.map(section => {
+            const visibleItems = section.items.filter(
+              item => !user || item.roles.includes(user.rol)
+            );
+            if (visibleItems.length === 0) return null;
+
             return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-[3px] transition-colors border ${
-                  isActive
-                    ? 'bg-white text-ink border-border shadow-none font-semibold'
-                    : 'text-ink-muted hover:text-ink hover:bg-[#DEE1DC] border-transparent'
-                }`}
-              >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-accent' : 'text-ink-subtle'}`} />
-                <span>{item.title}</span>
-              </a>
+              <div key={section.title}>
+                {!isCollapsed && (
+                  <p className="px-3 text-[11px] font-semibold text-[#80868B] uppercase tracking-wider mb-1.5">
+                    {section.title}
+                  </p>
+                )}
+                <nav className="space-y-1">
+                  {visibleItems.map(item => {
+                    const isActive = currentPath?.startsWith(item.href);
+                    const Icon = item.icon;
+
+                    return (
+                      <a
+                        key={item.name}
+                        href={item.href}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          isActive
+                            ? 'bg-[#E8F0FE] text-[#1A73E8] font-semibold'
+                            : 'text-[#5F6368] hover:bg-gray-100 hover:text-[#202124]'
+                        }`}
+                        title={isCollapsed ? item.name : undefined}
+                      >
+                        <div className="flex items-center gap-3 truncate">
+                          <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#1A73E8]' : 'text-[#5F6368]'}`} />
+                          {!isCollapsed && <span className="truncate">{item.name}</span>}
+                        </div>
+                        {!isCollapsed && item.badge && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#E6F4EA] text-[#137333]">
+                            {item.badge}
+                          </span>
+                        )}
+                      </a>
+                    );
+                  })}
+                </nav>
+              </div>
             );
           })}
-      </nav>
-
-      {/* User & Session Footer */}
-      <div className="p-3 border-t border-border bg-[#E4E6E1]">
-        <div className="flex items-center gap-2.5 mb-2 px-1">
-          <div className="w-7 h-7 rounded-[3px] bg-white border border-border flex items-center justify-center text-ink-muted shrink-0 font-mono text-xs">
-            {user?.nombre ? user.nombre.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium truncate text-ink">{user?.nombre || 'Usuario'}</p>
-            <p className="text-[10px] font-mono text-ink-subtle truncate">{user?.email || 'verificando...'}</p>
-          </div>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs text-ink-muted hover:text-ink hover:bg-[#DEE1DC] border border-border rounded-[3px] transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Cerrar Sesión</span>
-        </button>
-      </div>
-    </aside>
+        {/* Ficha de Usuario Inferior Estilo Google Profile */}
+        <div className="p-3 border-t border-[#E0E3E7] bg-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-[#1A73E8] text-white flex items-center justify-center font-semibold text-xs shrink-0 font-sans">
+              {user?.nombre ? getInitials(user.nombre) : 'IA'}
+            </div>
+            {!isCollapsed && (
+              <div className="truncate text-left">
+                <div className="text-xs font-semibold text-[#202124] truncate">
+                  {user?.nombre || 'Usuario'}
+                </div>
+                <div className="text-[11px] text-[#5F6368] capitalize truncate">
+                  {user?.rol || 'Investigador'}
+                </div>
+              </div>
+            )}
+          </div>
+          {!isCollapsed && (
+            <button
+              onClick={handleLogout}
+              title="Cerrar sesión"
+              className="p-1.5 rounded-lg hover:bg-red-50 text-[#5F6368] hover:text-[#D93025] transition"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }

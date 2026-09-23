@@ -1,7 +1,8 @@
 ---
 // src/layouts/DashboardLayout.astro
 import BaseLayout from './BaseLayout.astro';
-import { Navbar } from '../components/common/Navbar';
+import { Sidebar } from '../components/common/Sidebar';
+import { Topbar } from '../components/common/Topbar';
 
 interface Props {
   title?: string;
@@ -10,34 +11,24 @@ interface Props {
 }
 
 const { title, seccion, subtitulo } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <BaseLayout title={title}>
-  <div class="min-h-screen flex flex-col bg-base text-ink">
-    <!-- Navbar Global Estático con Auth y Enlaces por Rol -->
-    <Navbar client:load />
+  <div class="min-h-screen flex bg-base text-ink overflow-hidden">
+    <!-- Sidebar Colapsable Google Style -->
+    <Sidebar client:load currentPath={currentPath} />
 
-    <div class="flex-1 pt-14 flex flex-col min-w-0">
-      {(seccion || subtitulo) && (
-        <header class="h-10 bg-white border-b border-border px-4 sm:px-6 flex items-center justify-between shrink-0 select-none">
-          <div class="flex items-center gap-2">
-            {seccion && (
-              <span class="text-xs uppercase font-mono tracking-wider text-ink-subtle">{seccion}</span>
-            )}
-            {seccion && subtitulo && <span class="text-border">/</span>}
-            {subtitulo && (
-              <span class="text-xs font-semibold text-ink truncate">{subtitulo}</span>
-            )}
-          </div>
-          <div class="text-[11px] font-mono text-ink-muted hidden sm:flex items-center gap-2">
-            <span class="bg-[#F0F2F0] px-2 py-0.5 border border-border rounded-[2px]">IASA DataReport · QC</span>
-          </div>
-        </header>
-      )}
+    <!-- Área de Contenido Principal -->
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <!-- Topbar Superior con Breadcrumb y Acciones -->
+      <Topbar client:load seccion={seccion} subtitulo={subtitulo} />
 
-      <!-- Contenedor responsivo principal -->
-      <main class="flex-1 p-4 sm:p-6 overflow-y-auto max-w-7xl w-full mx-auto">
-        <slot />
+      <!-- Contenedor Principal con Scroll Independiente -->
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto w-full">
+        <div class="max-w-7xl mx-auto w-full">
+          <slot />
+        </div>
       </main>
     </div>
   </div>

@@ -36,28 +36,30 @@ export function AuditoriaTabla() {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto text-ink">
-      {/* Header & Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-border p-3 rounded-[3px]">
+      {/* Header & Filter Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-[#E0E3E7] p-4 rounded-xl shadow-xs">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-accent" />
+          <div className="w-10 h-10 rounded-lg bg-[#E8F0FE] text-[#1A73E8] flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
           <div>
-            <h2 className="text-sm font-semibold tracking-tight">Registro General de Auditoría</h2>
-            <p className="text-[11px] font-mono text-ink-muted">
-              Trazabilidad inmutable de operaciones (GET /api/v1/metrics/auditoria → MS3)
+            <h2 className="text-base font-semibold text-ink tracking-tight">Registro General de Auditoría</h2>
+            <p className="text-xs text-ink-muted">
+              Trazabilidad inmutable de operaciones del sistema (GET /api/v1/metrics/auditoria)
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 border border-border rounded-[3px] px-2 py-1 bg-base text-xs font-mono">
-            <Filter className="w-3.5 h-3.5 text-ink-subtle" />
+          <div className="flex items-center gap-2 border border-[#DADCE0] rounded-lg px-3 py-1.5 bg-white text-xs">
+            <Filter className="w-4 h-4 text-ink-muted" />
             <select
               value={entidad}
               onChange={(e) => {
                 setEntidad(e.target.value);
                 setOffset(0);
               }}
-              className="bg-transparent text-ink focus:outline-none cursor-pointer"
+              className="bg-transparent text-ink font-medium focus:outline-none cursor-pointer text-xs"
             >
               <option value="">Todas las Entidades</option>
               <option value="informes">Informes</option>
@@ -70,63 +72,64 @@ export function AuditoriaTabla() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="p-1.5 border border-border rounded-[3px] text-ink-muted hover:text-ink hover:bg-base transition-colors"
+            className="p-2 border border-[#DADCE0] rounded-lg text-[#5F6368] hover:text-[#202124] hover:bg-[#F8F9FA] transition-colors"
             title="Refrescar auditoría"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#1A73E8]' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Dense Audit Table */}
-      <div className="bg-white border border-border rounded-[3px] overflow-hidden">
+      {/* Google Cloud Logging Data Table */}
+      <div className="bg-white border border-[#E0E3E7] rounded-xl shadow-xs overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-xs font-mono text-ink-muted">
-            Cargando registros de auditoría desde MS Reviews...
+          <div className="p-12 text-center text-xs font-mono text-[#5F6368]">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#1A73E8] mb-2" />
+            Cargando registros de auditoría desde el microservicio...
           </div>
         ) : isError ? (
-          <div className="p-4 bg-red-50 border border-alarma/40 text-alarma text-xs rounded-[3px] font-mono">
+          <div className="p-4 m-4 bg-[#FCE8E6] border border-[#FAD2CF] text-[#D93025] text-xs rounded-lg font-mono">
             Error al cargar los registros de auditoría.
           </div>
         ) : registros.length === 0 ? (
-          <div className="p-8 text-center text-xs font-mono text-ink-muted">
+          <div className="p-12 text-center text-xs text-[#5F6368]">
             No se registraron eventos para el filtro actual.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border bg-[#F0F2F0] text-ink font-semibold uppercase tracking-wider text-[10px] font-mono select-none">
-                  <th className="py-2.5 px-3">ID</th>
-                  <th className="py-2.5 px-3">Fecha (UTC)</th>
-                  <th className="py-2.5 px-3">Acción</th>
-                  <th className="py-2.5 px-3">Entidad / ID</th>
-                  <th className="py-2.5 px-3">Usuario ID</th>
-                  <th className="py-2.5 px-3">Metadatos del Evento</th>
+                <tr className="border-b border-[#E0E3E7] bg-[#F8F9FA] text-[#5F6368] font-semibold uppercase tracking-wider text-[11px] select-none">
+                  <th className="py-3 px-4">ID</th>
+                  <th className="py-3 px-4">Fecha (UTC)</th>
+                  <th className="py-3 px-4">Acción</th>
+                  <th className="py-3 px-4">Entidad / ID</th>
+                  <th className="py-3 px-4">Usuario ID</th>
+                  <th className="py-3 px-4">Metadatos del Evento</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60 font-mono">
+              <tbody className="divide-y divide-[#E0E3E7] text-xs">
                 {registros.map((r) => (
-                  <tr key={r.id} className="hover:bg-base/60 transition-colors">
-                    <td className="py-2 px-3 font-semibold text-accent text-[11px]">
+                  <tr key={r.id} className="hover:bg-[#F8F9FA] transition-colors">
+                    <td className="py-3 px-4 font-mono font-semibold text-[#1A73E8] text-[11px]">
                       #{r.id}
                     </td>
-                    <td className="py-2 px-3 text-[11px] text-ink-subtle">
+                    <td className="py-3 px-4 font-mono text-[11px] text-[#5F6368]">
                       {new Date(r.fecha).toLocaleString('es-ES')}
                     </td>
-                    <td className="py-2 px-3">
-                      <span className="px-1.5 py-0.5 bg-base border border-border rounded-[2px] font-medium text-[10px] uppercase text-ink">
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 bg-[#E8F0FE] text-[#1A73E8] rounded-full font-medium text-[11px] uppercase tracking-wide">
                         {r.accion}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-[11px]">
+                    <td className="py-3 px-4">
                       <div className="font-semibold text-ink">{r.entidad}</div>
-                      <div className="text-[10px] text-ink-subtle">{r.entidad_id}</div>
+                      <div className="text-[11px] font-mono text-ink-muted">{r.entidad_id}</div>
                     </td>
-                    <td className="py-2 px-3 text-[10px] text-ink-subtle">
+                    <td className="py-3 px-4 font-mono text-[11px] text-ink-muted">
                       {r.usuario_id}
                     </td>
-                    <td className="py-2 px-3 max-w-xs truncate text-[10px] text-ink-muted">
+                    <td className="py-3 px-4 max-w-xs truncate font-mono text-[11px] text-ink-muted">
                       {JSON.stringify(r.metadatos)}
                     </td>
                   </tr>
@@ -137,25 +140,27 @@ export function AuditoriaTabla() {
         )}
 
         {/* Pagination Footer */}
-        <div className="flex items-center justify-between p-3 border-t border-border bg-[#F0F2F0] text-xs font-mono">
-          <div className="text-ink-muted text-[11px]">
-            Total de eventos: <strong>{total}</strong> · Página <strong>{paginaActual}</strong> de <strong>{paginasTotales}</strong>
+        <div className="flex items-center justify-between p-4 border-t border-[#E0E3E7] bg-[#F8F9FA] text-xs">
+          <div className="text-ink-muted text-xs">
+            Total de eventos: <strong className="text-ink">{total}</strong> · Página <strong className="text-ink">{paginaActual}</strong> de <strong className="text-ink">{paginasTotales}</strong>
           </div>
 
           <div className="flex items-center gap-1">
             <button
               onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={offset === 0}
-              className="p-1 border border-border rounded-[3px] bg-white hover:bg-base disabled:opacity-40"
+              className="p-1.5 border border-[#DADCE0] rounded-lg bg-white text-ink-muted hover:text-ink hover:bg-[#F8F9FA] disabled:opacity-40 disabled:hover:bg-white transition-colors"
+              title="Página anterior"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setOffset(offset + limit)}
               disabled={paginaActual >= paginasTotales}
-              className="p-1 border border-border rounded-[3px] bg-white hover:bg-base disabled:opacity-40"
+              className="p-1.5 border border-[#DADCE0] rounded-lg bg-white text-ink-muted hover:text-ink hover:bg-[#F8F9FA] disabled:opacity-40 disabled:hover:bg-white transition-colors"
+              title="Página siguiente"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

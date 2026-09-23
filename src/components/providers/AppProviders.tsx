@@ -14,16 +14,16 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("🚨 [ErrorBoundary] Atrapó un error:", error, errorInfo);
+    console.error("[ErrorBoundary] Atrapó un error:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', backgroundColor: '#fee2e2', color: '#991b1b', border: '2px solid #ef4444', borderRadius: '8px', margin: '20px' }}>
-          <h2 style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>🚨 Error Capturado en React</h2>
-          <p style={{ fontWeight: 'bold' }}>{this.state.error?.message}</p>
-          <pre style={{ marginTop: '10px', fontSize: '12px', overflowX: 'auto' }}>
+        <div style={{ padding: '20px', backgroundColor: '#FCE8E6', color: '#D93025', border: '1px solid #FAD2CF', borderRadius: '12px', margin: '20px', fontFamily: 'Inter, sans-serif' }}>
+          <h2 style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px' }}>Error en Componente React</h2>
+          <p style={{ fontWeight: '600', fontSize: '14px' }}>{this.state.error?.message}</p>
+          <pre style={{ marginTop: '10px', fontSize: '12px', overflowX: 'auto', backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #FAD2CF' }}>
             {this.state.error?.stack}
           </pre>
         </div>
@@ -47,7 +47,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 // 3. Envoltorio (HOC)
 export function withProvider<T extends Record<string, any>>(WrappedComponent: React.ComponentType<T>) {
   return function ProviderWrapper(props: T) {
-    console.log(`🛠️ [withProvider] Montando componente: ${WrappedComponent.displayName || WrappedComponent.name || 'Componente'}`);
+    console.log(`[withProvider] Montando componente: ${WrappedComponent.displayName || WrappedComponent.name || 'Componente'}`);
     return (
       <AppProviders>
         <WrappedComponent {...props} />

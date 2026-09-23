@@ -83,35 +83,38 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white border border-border rounded-[4px] p-6 text-ink">
-      <div className="mb-6 pb-4 border-b border-border">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 bg-accent flex items-center justify-center rounded-[3px] text-white font-mono text-xs font-bold">
+    <div className="w-full max-w-md bg-white border border-[#E0E3E7] rounded-2xl p-8 shadow-google text-[#202124]">
+      <div className="mb-6 pb-4 border-b border-[#E0E3E7]">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-9 h-9 bg-[#1A73E8] flex items-center justify-center rounded-xl text-white text-xs font-bold shadow-xs">
             IA
           </div>
-          <span className="font-mono text-xs font-semibold tracking-wider uppercase text-ink">
-            Instituto IASA · QA Data
-          </span>
+          <div>
+            <span className="text-xs font-bold text-[#202124] tracking-tight">
+              IASA DataReport
+            </span>
+            <p className="text-[11px] text-[#5F6368]">Control de Calidad de Datos</p>
+          </div>
         </div>
-        <h1 className="text-lg font-semibold tracking-tight">
-          {isRegister ? 'Registro de Usuario' : 'Acceso a la Plataforma'}
+        <h1 className="text-xl font-bold tracking-tight text-[#202124]">
+          {isRegister ? 'Crear Cuenta Institucional' : 'Acceso a la Plataforma'}
         </h1>
-        <p className="text-xs text-ink-muted mt-1 font-mono">
+        <p className="text-xs text-[#5F6368] mt-1">
           {isRegister
-            ? 'Crea tu cuenta de investigador o revisor'
-            : 'Introduce tus credenciales para acceder al sistema'}
+            ? 'Introduce tus datos para registrarte en el sistema'
+            : 'Introduce tus credenciales para acceder a tus expedientes'}
         </p>
       </div>
 
       {serverError && (
-        <div className="mb-4 p-3 bg-red-50 border border-alarma/40 text-alarma text-xs rounded-[3px] flex items-start gap-2">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-[#D93025] text-xs rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span className="font-mono">{serverError}</span>
+          <span>{serverError}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 border border-estado-aprobado/40 text-estado-aprobado text-xs rounded-[3px] font-mono">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-[#1E8E3E] text-xs rounded-lg">
           {successMessage}
         </div>
       )}
@@ -119,67 +122,67 @@ export function LoginForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {isRegister && (
           <div>
-            <label className="block text-xs font-mono font-medium mb-1 text-ink">
+            <label className="block text-xs font-medium mb-1.5 text-[#202124]">
               Nombre Completo
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-ink-subtle absolute left-2.5 top-2.5" />
+              <User className="w-4 h-4 text-[#80868B] absolute left-3 top-3" />
               <input
                 type="text"
                 {...register('nombre')}
                 placeholder="Dr. Carlos Mendoza"
-                className="w-full pl-8 pr-3 py-2 text-xs border border-border rounded-[3px] bg-base focus:bg-white focus:outline-none focus:border-accent font-sans"
+                className="w-full pl-9 pr-3.5 py-2.5 text-xs border border-[#E0E3E7] rounded-lg bg-white focus:outline-none focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20 transition"
               />
             </div>
             {errors.nombre && (
-              <p className="text-xs text-alarma mt-1 font-mono">{errors.nombre.message}</p>
+              <p className="text-xs text-[#D93025] mt-1">{errors.nombre.message}</p>
             )}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-mono font-medium mb-1 text-ink">
-            Correo Institucional
+          <label className="block text-xs font-medium mb-1.5 text-[#202124]">
+            Correo Electrónico
           </label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-ink-subtle absolute left-2.5 top-2.5" />
+            <Mail className="w-4 h-4 text-[#80868B] absolute left-3 top-3" />
             <input
               type="email"
               {...register('email')}
               placeholder="investigador@iasa.edu"
-              className="w-full pl-8 pr-3 py-2 text-xs border border-border rounded-[3px] bg-base focus:bg-white focus:outline-none focus:border-accent font-mono"
+              className="w-full pl-9 pr-3.5 py-2.5 text-xs border border-[#E0E3E7] rounded-lg bg-white focus:outline-none focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20 transition font-mono"
             />
           </div>
           {errors.email && (
-            <p className="text-xs text-alarma mt-1 font-mono">{errors.email.message}</p>
+            <p className="text-xs text-[#D93025] mt-1">{errors.email.message}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-mono font-medium mb-1 text-ink">
+          <label className="block text-xs font-medium mb-1.5 text-[#202124]">
             Contraseña
           </label>
           <div className="relative">
-            <Lock className="w-4 h-4 text-ink-subtle absolute left-2.5 top-2.5" />
+            <Lock className="w-4 h-4 text-[#80868B] absolute left-3 top-3" />
             <input
               type="password"
               {...register('password')}
               placeholder="••••••••"
-              className="w-full pl-8 pr-3 py-2 text-xs border border-border rounded-[3px] bg-base focus:bg-white focus:outline-none focus:border-accent font-mono"
+              className="w-full pl-9 pr-3.5 py-2.5 text-xs border border-[#E0E3E7] rounded-lg bg-white focus:outline-none focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20 transition font-mono"
             />
           </div>
           {errors.password && (
-            <p className="text-xs text-alarma mt-1 font-mono">{errors.password.message}</p>
+            <p className="text-xs text-[#D93025] mt-1">{errors.password.message}</p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-accent hover:bg-accent-hover text-white text-xs font-medium rounded-[3px] flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+          className="w-full py-2.5 px-4 bg-[#1A73E8] hover:bg-[#1557B0] text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition shadow-xs hover:shadow disabled:opacity-50"
         >
           {loading ? (
-            <span className="font-mono">Procesando...</span>
+            <span>Procesando...</span>
           ) : (
             <>
               <span>{isRegister ? 'Registrar Cuenta' : 'Iniciar Sesión'}</span>
@@ -189,7 +192,7 @@ export function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-6 pt-4 border-t border-border flex justify-between items-center text-xs">
+      <div className="mt-6 pt-4 border-t border-[#E0E3E7] flex justify-between items-center text-xs">
         <button
           type="button"
           onClick={() => {
@@ -197,14 +200,14 @@ export function LoginForm() {
             setServerError(null);
             setSuccessMessage(null);
           }}
-          className="text-accent hover:underline font-mono text-[11px]"
+          className="text-[#1A73E8] hover:underline font-medium text-xs"
         >
           {isRegister
             ? '¿Ya tienes una cuenta? Inicia sesión'
             : '¿No tienes cuenta? Regístrate'}
         </button>
 
-        <span className="text-ink-subtle text-[11px] font-mono">v1.0.0</span>
+        <span className="text-[#80868B] text-[11px] font-mono">IASA QC</span>
       </div>
     </div>
   );
