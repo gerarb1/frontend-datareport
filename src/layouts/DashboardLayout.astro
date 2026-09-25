@@ -33,3 +33,10 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (user) {
+    import('../lib/presence').then(m => m.joinPresence(user));
+  }
+</script>

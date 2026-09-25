@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '@/lib/api';
 import { Lock, Mail, User, AlertCircle, ArrowRight } from 'lucide-react';
+import { joinPresence } from '@/lib/presence';
 
 const authSchema = z.object({
   email: z.string().email('Correo electrónico no válido'),
@@ -71,10 +72,12 @@ export function LoginForm() {
 
           // Redirigir a la nueva pantalla de inicio
           window.location.href = '/inicio';
+          joinPresence({ id: res.data.user.id, nombre: res.data.user.nombre, rol: res.data.user.rol });
         } else {
           setServerError(res.error || 'Credenciales inválidas');
         }
       }
+      leavePresence(); // Asegurarse de dejar la presencia al finalizar el intento de login
     } catch (err: any) {
       setServerError(err.message || 'Error en la comunicación con el servidor');
     } finally {
