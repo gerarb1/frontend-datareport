@@ -62,7 +62,6 @@ export function LoginForm() {
         });
 
         if (res.success && res.data?.access_token) {
-          // Guardar credenciales para que PerfilUsuario pueda leerlas
           localStorage.setItem('access_token', res.data.access_token);
           localStorage.setItem('user', JSON.stringify(res.data.user));
 
@@ -70,14 +69,18 @@ export function LoginForm() {
             await api.auth.syncProfile();
           } catch { }
 
-          // Redirigir a la nueva pantalla de inicio
+          // Unir a presencia ANTES de redirigir (no bloquea)
+          joinPresence({
+            id: res.data.user.id,
+            nombre: res.data.user.nombre,
+            rol: res.data.user.rol,
+          });
+
           window.location.href = '/inicio';
-          joinPresence({ id: res.data.user.id, nombre: res.data.user.nombre, rol: res.data.user.rol });
         } else {
           setServerError(res.error || 'Credenciales inválidas');
         }
       }
-      leavePresence(); // Asegurarse de dejar la presencia al finalizar el intento de login
     } catch (err: any) {
       setServerError(err.message || 'Error en la comunicación con el servidor');
     } finally {
